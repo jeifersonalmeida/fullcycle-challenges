@@ -1,0 +1,29 @@
+version: '3.9'
+
+services:
+  mysql_database:
+    image: mysql
+    networks:
+      - fullcycle_network
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_DATABASE=fullcycle_challenge
+  nodejs_app:
+    build: nodejs-app
+    entrypoint: dockerize -wait tcp://mysql_database:3306 -timeout 60s node index.js
+    networks:
+      - fullcycle_network
+    depends_on:
+      - mysql_database
+  nginx_proxy:
+    build: nginx-proxy
+    networks:
+      - fullcycle_network
+    depends_on:
+      - nodejs_app
+    ports:
+      - 8080:80
+
+networks:
+  fullcycle_network:
+    driver: bridge
